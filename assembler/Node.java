@@ -13,7 +13,7 @@ public class Node<T>{
         this.next = next;
     }
 
-    public void setData(<T> data){
+    public void setData(T data){
         this.data = data;
     }
 
