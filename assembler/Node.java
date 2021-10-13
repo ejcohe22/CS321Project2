@@ -4,8 +4,8 @@
  * Class represents a Generic Node
  * */
 
-public class node{
-    private <T> data;
+public class Node<T>{
+    private T data;
     private Node<T> next;
 
     public Node(T data, Node<T> next) {
@@ -21,7 +21,7 @@ public class node{
         this.next = node;
     }
 
-    public <T> getData(){
+    public T getData(){
         return this.data;
     }
 
