@@ -4,7 +4,7 @@
  * Java class representing a stack
  */
 
- 
+
 
 public class Stack<T>{
     
@@ -24,9 +24,15 @@ public class Stack<T>{
     }
 
     public Node<T> pop(){
-        Node<T> top = this.head;
-        this.head = top.getNext();
+
+        if (this.head != null){
+            Node<T> top = this.head;
+            this.head = top.getNext();
         return top;
+        }
+        else{
+            return null;
+        }
     }
 
     public T peek(){
