@@ -7,8 +7,8 @@
 public class StackTest{
     public static void main(String[] args) {
         //test constructors
-        Stack a = new Stack<Integer>();
-        Stack b = new Stack<Integer>(new Node<Integer>(2, null));
+        Stack<Integer> a = new Stack<Integer>();
+        Stack<Integer> b = new Stack<Integer>(new Node<Integer>(2, null));
         
         //test peek
         System.out.println(a.peek() + " return null?");
