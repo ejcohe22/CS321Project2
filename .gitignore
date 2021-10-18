@@ -1,0 +1,5 @@
+# Ignore any .class files
+*.class
+
+# Ignore the hidden .DS_Store file from MacOS
+.DS_Store
