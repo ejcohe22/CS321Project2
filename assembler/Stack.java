@@ -36,11 +36,7 @@ public class Stack<T>{
     }
 
     public T peek(){
-        if(this.isEmpty()){
-            return null;
-        }else{
         return this.head.getData();
-        }
     }
 
     public boolean isEmpty(){
