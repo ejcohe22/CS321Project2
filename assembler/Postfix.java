@@ -58,7 +58,7 @@ public class Postfix {
 
                         // Add one to the expression count
                         numExp++;
-                        
+
                         break;
                     }
 
@@ -194,7 +194,6 @@ public class Postfix {
         // If the incorrect number of arguments were passed through print an error message
         // And print the usage statement
         else{
-
             System.out.println("Error: Too many arguments were passed!");
             System.out.println("usage: Postfix input [output]");
         }
