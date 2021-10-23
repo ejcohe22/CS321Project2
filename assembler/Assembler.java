@@ -29,7 +29,7 @@ public class Assembler {
     // Divide format
     private String divide = "DV %s\n";
     // Temporary variable format
-    private String temporary = "TMP%s\n";
+    private String temporary = "TMP%s";
 
     // This field holds our assembly string
     private String assembly = "";
