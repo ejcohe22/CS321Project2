@@ -10,6 +10,14 @@ import java.io.*;
 // Creating class that will convert an infix expression to a assembly expression
 public class Assembler { 
 
+    // Field holding the postfix expression stack
+    private Stack<String> postfixExpression;
+    // Field holding the infix expression stack
+    private Stack<String> infixExpression;
+    // Field holding postfix text file name
+    private String postfixFileName;
+
+
     // Creating field for temporary storage spots
     private int tempVars;
     // Creating an empty stack that will hold our final expressions
@@ -34,13 +42,31 @@ public class Assembler {
     // This field holds our assembly string
     private String assembly = "";
 
-    // Default constructor method
-    public Assembler(){
+
+    public Assembler(String fileName){
         
         // Sets tempVars to 1
         this.tempVars = 1;
         // Initializes the finalExpressions stack
         this.finalExpressions = new Stack<String>();
+        // Initializes the postfix object
+
+        Postfix postfixConvert = new Postfix();
+        // Reads the file with infix expressions
+        postfixConvert.convertFile(fileName);
+
+        // Initializing the infix stack
+        this.infixExpression = postfixConvert.getInfix();
+        // Initializing the postfix stack
+        this.postfixExpression = postfixConvert.getPostfix();
+
+        // postfix filename created
+        this.postfixFileName = fileName.replace(".txt", "") + "_postfix.txt";
+        // Writes the postfix file 
+        postfixConvert.writeFile(this.postfixFileName);
+
+
+        
         
     }
 
@@ -98,12 +124,12 @@ public class Assembler {
 
     // Method reads our postfix file and converts it to assembly
     // All the assembly expressions are stored in a global field
-    public void convertFile(String fileName){
+    public void convertFile(){
 
         try {
             
             // Creating filereader object
-            FileReader reader = new FileReader(fileName);
+            FileReader reader = new FileReader(this.postfixFileName);
             // Creating buffered reader object
             BufferedReader buffer = new BufferedReader(reader);
             // Reading the first line in the text file
@@ -172,10 +198,52 @@ public class Assembler {
             buffer.close();
         } 
         catch (FileNotFoundException ex) {
-            System.out.println("Assembler.convertFile():: unable to open file " + fileName);
+            System.out.println("Assembler.convertFile():: unable to open file " + this.postfixFileName);
         }
         catch (IOException ex){
-            System.out.println("Assembler.convertFile():: error reading file " + fileName);
+            System.out.println("Assembler.convertFile():: error reading file " + this.postfixFileName);
+        }
+    }
+
+    // This method writes a file containing all the converted assembly expressions
+    public void writeFile(String fileName){
+
+        try {
+            
+            // Creating file write object
+            FileWriter write = new FileWriter(fileName);
+            // Creating a stack which will contain all assembly expressions in their original order
+            Stack<String> writingAssembly = new Stack<String>();
+            Stack<String> writingInfix = new Stack<String>();
+            Stack<String> writingPostfix = new Stack<String>();
+            
+            // Restacking some strings
+            while (! this.finalExpressions.isEmpty()){
+                writingAssembly.push(this.finalExpressions.pop());
+            }
+            while (! this.infixExpression.isEmpty()){
+                writingInfix.push(this.infixExpression.pop());
+            }
+            while(! this.postfixExpression.isEmpty()){
+                writingPostfix.push(this.postfixExpression.pop());
+            }
+
+            // Writing to file
+            while (! writingAssembly.isEmpty()){
+                write.append("Infix Expression: " + writingInfix.pop().getData() + "\n");
+                write.append("Postfix Expression: " + writingPostfix.pop().getData() + "\n");
+                write.append(writingAssembly.pop().getData() + "\n\n\n");
+            }
+
+            // Close the FileWriter object
+            write.close();
+
+            // Letting user know that the file finished writing
+            System.out.println("Finished writing file " + fileName );
+        } 
+
+        catch (IOException ex) {
+            System.out.println("Assembler.writeFile():: Cannot write to file " + fileName);
         }
     }
 
@@ -183,8 +251,8 @@ public class Assembler {
     public static void main(String[] args) {
         
         // Creating test object
-        Assembler test = new Assembler();
-
-        test.convertFile("exp_postfix.txt");
+        Assembler test = new Assembler("exp.txt");
+        test.convertFile();
+        test.writeFile("exp_assembly.txt");
     }
 }
