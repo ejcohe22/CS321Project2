@@ -10,216 +10,249 @@ import java.io.*;
 // Creating class that will convert an infix expression to a assembly expression
 public class Assembler { 
 
-    private int register = 1;
+    // Field holding the postfix expression stack
+    private Stack<String> postfixExpression;
+    // Field holding the infix expression stack
+    private Stack<String> infixExpression;
+    // Field holding postfix text file name
+    private String postfixFileName;
 
-    // Field holds a stack with assembly expressions
-    private Stack<String> assembler = new Stack<String>();
-    
-    // Method converts Postfix expressions within a given file
-    public void convertFile(String fileName){
 
-        // Space string for neater format
-        String sp = " ";
+    // Creating field for temporary storage spots
+    private int tempVars;
+    // Creating an empty stack that will hold our final expressions
+    private Stack<String> finalExpressions;
+
+    // These fields hold string formats for the assembly language
+    // load format
+    private String load = "LD %s\n";
+    // Store format
+    private String store = "ST %s\n";
+    // Add format
+    private String add = "AD %s\n";
+    // Subtract format
+    private String subtract = "SB %s\n";
+    // Multiply format
+    private String multiply = "ML %s\n";
+    // Divide format
+    private String divide = "DV %s\n";
+    // Temporary variable format
+    private String temporary = "TMP%s";
+
+    // This field holds our assembly string
+    private String assembly = "";
+
+
+    public Assembler(String fileName){
+        
+        // Sets tempVars to 1
+        this.tempVars = 1;
+        // Initializes the finalExpressions stack
+        this.finalExpressions = new Stack<String>();
+        // Initializes the postfix object
+
+        Postfix postfixConvert = new Postfix();
+        // Reads the file with infix expressions
+        postfixConvert.convertFile(fileName);
+
+        // Initializing the infix stack
+        this.infixExpression = postfixConvert.getInfix();
+        // Initializing the postfix stack
+        this.postfixExpression = postfixConvert.getPostfix();
+
+        // postfix filename created
+        this.postfixFileName = fileName.replace(".txt", "") + "_postfix.txt";
+        // Writes the postfix file 
+        postfixConvert.writeFile(this.postfixFileName);
+
+
+        
+        
+    }
+
+    // Method Takes in two operands and an operator, then converts them to 
+    // an expression in assembly
+    public String evaluate(String left, String operator, String right){
+
+        // Second step is always in the switch case
+        String stepTwo = "";
+
+        // First step is always to load the left operand
+        String stepOne = String.format(this.load,left);
+
+        // Using switch statement to look through the possible operators
+        switch(operator){
+
+            // Addition case
+            case "+":
+                // Step two, add the right operand
+                stepTwo = String.format(this.add,right);
+                break;
+            
+            // Subtraction case
+            case "-":
+                // Step two, subtract the right operand
+                stepTwo = String.format(this.subtract,right);
+                break;
+            
+            // Multiplication case
+            case "*":
+                // Step two, multiply the right operand
+                stepTwo = String.format(this.multiply,right);
+                break;
+            
+            // Division case
+            case "/":
+                // Step two, divide the right operand
+                stepTwo = String.format(this.divide,right); 
+                break;          
+        }
+
+        // Last step is to always load to a temporary variable
+        // Making a temporary variable string 
+        String temporaryVariable = String.format(this.temporary,this.tempVars);
+        // Adding one to the tempVars field
+        this.tempVars += 1;
+        // Step three, store the result of left + right to TMP1
+        String stepThree = String.format(this.store,temporaryVariable);
+
+        // Add all steps together
+        this.assembly += stepOne + stepTwo + stepThree;
+
+        return temporaryVariable;
+    }
+
+    // Method reads our postfix file and converts it to assembly
+    // All the assembly expressions are stored in a global field
+    public void convertFile(){
+
         try {
+            
+            // Creating filereader object
+            FileReader reader = new FileReader(this.postfixFileName);
+            // Creating buffered reader object
+            BufferedReader buffer = new BufferedReader(reader);
+            // Reading the first line in the text file
+            String line = buffer.readLine();
 
-            // Creating file reader object
-            FileReader fr = new FileReader(fileName);
-            // Creating buffer reader object
-            BufferedReader reader = new BufferedReader(fr);
-            // reading the first line in the text file
-            String line = reader.readLine();
-
-            // Seperate Postfix Commands for each expression
+            // Initializing counter for the number of expressions (For debugging)
             int numExp = 0;
-            System.out.println("Assembley:");
-            while (line != null) {
-                // Trimming any leading spaces and splitting the line by spaces
+
+            // Iterating through each expression in the file
+            while (line != null){
+
+                // Getting a list of all the tokens within the expression
+                // First trim any extra leading space, then separate by spaces
                 String[] tokens = line.trim().split("\\s+");
-                // Creating a stack to hold our expressions
+                //Creating Stack to hold temporary expressions
                 Stack<String> expStack = new Stack<String>();
                 System.out.println("expression " + numExp + ": " );
                 // Iterating through each token
-                for(int i = 0; i < tokens.length; i++){
-                    // Getting i-th token
+                for (int i = 0; i < tokens.length; i++) {
+                    
+                    // Getting ith token
                     String token = tokens[i];
 
-                    // If the current token is ;, we have reached the end of our expression
-                    // We add one to the number of the expression, print the final expression
-                    // Push the final expression to the global assembler stack
-                    // and break out of the for loop to continue on to the next line
-                    if(token.equals(";")){
-                        // Print the expression to command line
-                        // Add one to the expression count
+                    if (token.equals(";")){
+
+
+                        // Print Assembly code to command line
+                        System.out.println("Expression " + numExp + " converted to:");
+                        System.out.println(this.assembly);
+                        // Push expression to the global stack
+                        this.finalExpressions.push(new Node<String>(assembly, null));
+                        // Add one to expression counter
                         numExp++;
-                        assembler.push(new Node<String>("\n\n",null));
+                        // Reset global tempVars counter
+                        this.tempVars = 1;
+                        // Reset assembly string
+                        this.assembly = "";
                         break;
                     }
 
-                    // If token is an operator...
-                    if(token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")){
+                    // If the current token is an operator
+                    if (token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")){
 
-                        // Pop the right operand
+                        // Right operand
                         String right = expStack.pop().getData();
-                        // Pop the left operand
+                        // Left operand
                         String left = expStack.pop().getData();
+                        // Push the result of evaluate to the stack
+                        expStack.push(new Node<String>(this.evaluate(left, token, right), null));
+                    }
 
-                        // LD Left
-                        System.out.println("   LD    " + left );
-                        assembler.push(new Node<String>(("   LD    " + left), null));
+                    // If the token is not an operator
+                    else if (!token.equals("+") && !token.equals("-") && !token.equals("*") && !token.equals("/")){
 
-                        // OPD Right
-                        switch (token) {
-                            case "+":  
-                                System.out.println("   AD    " + right );
-                                assembler.push(new Node<String>(("   AD    " + right),null));
-                                break;
-                            case "-":  
-                                System.out.println("   SB    " + right );
-                                assembler.push(new Node<String>(("   SB    " + right),null));
-                                break;
-                            case "*":  
-                                System.out.println("   ML    " + right );
-                                assembler.push(new Node<String>(("   ML    " + right),null));
-                                break;
-                            case "/":  
-                                System.out.println("   DV    " + right );
-                                assembler.push(new Node<String>(("   DV    " + right),null));
-                                break;
-                            default:
-                                System.out.println("OH NO!!!!!!!");
-                        }
-                        // Store as Tempn
-                        System.out.println("   ST    TMP" + register);
-                        assembler.push(new Node<String>(("   ST    TMP" + register),null));
-
-                        // Push a new node containing the expression register location
-                        expStack.push(new Node<String>(("TMP" + register), null));
-                        register++;
-
-
-                    // If the token is not an operator, push the token to the stack
-                    }else{
+                        // Push the token to the stack
                         expStack.push(new Node<String>(token,null));
                     }
 
                 }
-                
+
                 // Read a new line which may contain an expression
-                line = reader.readLine();
-                register = 1;
-                
+                line = buffer.readLine();
             }
 
-            // Close the buffer reader
-            reader.close();
+            // Closing the buffer object
+            buffer.close();
+        } 
+        catch (FileNotFoundException ex) {
+            System.out.println("Assembler.convertFile():: unable to open file " + this.postfixFileName);
         }
-        catch(FileNotFoundException ex){
-          System.out.println("Assembler.convertFile():: unable to open file " + fileName);
+        catch (IOException ex){
+            System.out.println("Assembler.convertFile():: error reading file " + this.postfixFileName);
         }
-        catch(IOException ex){
-            System.out.println("Assembler.convertFile():: error reading file " + fileName);
-        }
-    
-      }
-    
-    // Method writes a file containing all the converted assembly expressions
-    public void writeFile(String fileName){
-
-        try{
-            
-            // Creating file writer object
-            FileWriter write = new FileWriter(fileName);
-            // Creating a stack which will contain all the expressions in their original order
-            Stack<String> writing = new Stack<String>();
-
-            // Moving the assembly expressions from the assembly field
-            // to the writing stack. This will return the expressions to their 
-            // Original order
-            while(! this.assembler.isEmpty()){
-                writing.push(this.assembler.pop());
-            }
-
-            // Going through the writing stack, popping them
-            // and then appending that to the file we are writing
-            while(! writing.isEmpty()){
-            write.append(writing.pop().getData() + "\n");
-            }
-
-            // Close the file once we are done writing assembly expressions to it
-            write.close();
-            
-            // Letting user know that the file has finished writing
-            System.out.println("Finished writing file " + fileName);
-
-        }
-        catch(IOException ex){
-            System.out.println("Assembler.writeFile():: Cannot write to file " + fileName);
-        }
-
-
     }
 
-    public static void main(String[] args){ 
+    // This method writes a file containing all the converted assembly expressions
+    public void writeFile(String fileName){
 
-        // Creating new Postfix object
-        Postfix Postfix = new Postfix();
-        
-        // Creating new assembler object
-        Assembler expression = new Assembler();
-
-        // Default operation, input file is exp.txt
-        // Output file is conv.txt
-        if (args.length == 0){
-
-            // Reading exp.txt file
-            Postfix.convertFile("exp.txt");
-            // Writing assembler expressions from exp.txt to conv.txt
-            expression.writeFile("conv.txt");
-
-            // Printing use statement
-            System.out.println("usage: Assembler input [output]");
-
-        }
-        
-        // Case in which we are given an input file name but not an output file name
-        else if (args.length == 1){
+        try {
             
-            // Getting the input file name
-            String inputName = args[0];
+            // Creating file write object
+            FileWriter write = new FileWriter(fileName);
+            // Creating a stack which will contain all assembly expressions in their original order
+            Stack<String> writingAssembly = new Stack<String>();
+            Stack<String> writingInfix = new Stack<String>();
+            Stack<String> writingPostfix = new Stack<String>();
+            
+            // Restacking some strings
+            while (! this.finalExpressions.isEmpty()){
+                writingAssembly.push(this.finalExpressions.pop());
+            }
+            while (! this.infixExpression.isEmpty()){
+                writingInfix.push(this.infixExpression.pop());
+            }
+            while(! this.postfixExpression.isEmpty()){
+                writingPostfix.push(this.postfixExpression.pop());
+            }
 
-            // Reading the input file
-            expression.convertFile(inputName);
+            // Writing to file
+            while (! writingAssembly.isEmpty()){
+                write.append("Infix Expression: " + writingInfix.pop().getData() + "\n");
+                write.append("Postfix Expression: " + writingPostfix.pop().getData() + "\n");
+                write.append(writingAssembly.pop().getData() + "\n\n\n");
+            }
 
-            // Creating output file name
-            String outputFile = inputName.replace(".txt", "") + "_assembly.txt";
+            // Close the FileWriter object
+            write.close();
 
-            expression.writeFile(outputFile);
+            // Letting user know that the file finished writing
+            System.out.println("Finished writing file " + fileName );
+        } 
 
+        catch (IOException ex) {
+            System.out.println("Assembler.writeFile():: Cannot write to file " + fileName);
         }
+    }
 
-        // Case in which we are given both the input and output file names
-        else if (args.length == 2){
 
-            // Getting the input file
-            String inputName = args[0];
-            // Getting the output file
-            String outputName = args[1];
-
-            // Reading the input file
-            expression.convertFile(inputName);
-            // Writing to the output file
-            expression.writeFile(outputName);
-
-        }
-
-        // If the incorrect number of arguments were passed through print an error message
-        // And print the usage statement
-        else{
-
-            System.out.println("Error: Too many arguments were passed!");
-            System.out.println("usage: Assembler input [output] ");
-        }
-
- 
-    } 
+    public static void main(String[] args) {
+        
+        // Creating test object
+        Assembler test = new Assembler("exp.txt");
+        test.convertFile();
+        test.writeFile("exp_assembly.txt");
+    }
 }

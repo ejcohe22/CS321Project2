@@ -5,13 +5,31 @@
  * */
 
 
-import java.io.*; 
+import java.io.*;
 
 // Creating class that will convert an infix expression to a postfix expression
 public class Postfix { 
 
     // Field holds a stack with postfix expressions
-    private Stack<String> postfix = new Stack<String>();
+    private Stack<String> postfix;
+    // Field holds a stack with the infix expressions
+    private Stack<String> infix;
+
+    // Default constructor
+    public Postfix(){
+
+        // Initializing postfix stack
+        this.postfix = new Stack<String>();
+        // Initialzing infix stack
+        this.infix = new Stack<String>();
+
+    }
+
+    // Getter method for the postfix stack
+    public Stack<String> getPostfix() { return this.postfix; }
+
+    // Getter method for the infix stack
+    public Stack<String> getInfix() { return this.infix; }
     
     // Method converts all infix expressions within a given file
     public void convertFile(String fileName){
@@ -30,6 +48,10 @@ public class Postfix {
             // Seperate Postfix Commands for each expression
             int numExp = 0;
             while (line != null) {
+
+                // Pushing the current line to the infix stack
+                this.infix.push(new Node<String>(line, null));
+
                 // Trimming any leading spaces and splitting the line by spaces
                 String[] tokens = line.trim().split("\\s+");
                 // Creating a stack to hold our expressions
@@ -58,7 +80,7 @@ public class Postfix {
 
                         // Add one to the expression count
                         numExp++;
-                        
+
                         break;
                     }
 
@@ -116,11 +138,20 @@ public class Postfix {
             while(! this.postfix.isEmpty()){
                 writing.push(this.postfix.pop());
             }
+            
 
             // Going through the writing stack, popping them
             // and then appending that to the file we are writing
             while(! writing.isEmpty()){
-            write.append(writing.pop().getData() + "\n");
+                
+                // Pop the writing stack
+                Node<String> currentNode = writing.pop();
+                // Get the line we are going to write
+                String newLine = currentNode.getData();
+                // Push the node back to the global stack
+                this.postfix.push(currentNode);
+                // Write new line
+                write.append(newLine + "\n");
             }
 
             // Close the file once we are done writing postfix expressions to it
@@ -194,7 +225,6 @@ public class Postfix {
         // If the incorrect number of arguments were passed through print an error message
         // And print the usage statement
         else{
-
             System.out.println("Error: Too many arguments were passed!");
             System.out.println("usage: Postfix input [output]");
         }
