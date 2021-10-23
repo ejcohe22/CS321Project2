@@ -64,33 +64,33 @@ public class Assembler {
                         String left = expStack.pop().getData();
 
                         // LD Left
-                        System.out.println("LD " + left );
-                        assembler.push(new Node<String>(("LD " + left), null));
+                        System.out.println("   LD    " + left );
+                        assembler.push(new Node<String>(("   LD    " + left), null));
 
                         // OPD Right
                         switch (token) {
                             case "+":  
-                                System.out.println("AD " + right );
-                                assembler.push(new Node<String>(("AD " + right),null));
+                                System.out.println("   AD    " + right );
+                                assembler.push(new Node<String>(("   AD    " + right),null));
                                 break;
                             case "-":  
-                                System.out.println("SB " + right );
-                                assembler.push(new Node<String>(("SB " + right),null));
+                                System.out.println("   SB    " + right );
+                                assembler.push(new Node<String>(("   SB    " + right),null));
                                 break;
                             case "*":  
-                                System.out.println("ML " + right );
-                                assembler.push(new Node<String>(("ML " + right),null));
+                                System.out.println("   ML    " + right );
+                                assembler.push(new Node<String>(("   ML    " + right),null));
                                 break;
                             case "/":  
-                                System.out.println("DV " + right );
-                                assembler.push(new Node<String>(("DV " + right),null));
+                                System.out.println("   DV    " + right );
+                                assembler.push(new Node<String>(("   DV    " + right),null));
                                 break;
                             default:
                                 System.out.println("OH NO!!!!!!!");
                         }
                         // Store as Tempn
-                        System.out.println("ST TMP" + register);
-                        assembler.push(new Node<String>(("ST TMP" + register),null));
+                        System.out.println("   ST    TMP" + register);
+                        assembler.push(new Node<String>(("   ST    TMP" + register),null));
 
                         // Push a new node containing the expression register location
                         expStack.push(new Node<String>(("TMP" + register), null));
