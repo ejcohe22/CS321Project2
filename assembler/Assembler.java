@@ -10,7 +10,7 @@ import java.io.*;
 // Creating class that will convert an infix expression to a assembly expression
 public class Assembler { 
 
-    private int register = 0;
+    private int register = 1;
 
     // Field holds a stack with assembly expressions
     private Stack<String> assembler = new Stack<String>();
@@ -31,13 +31,13 @@ public class Assembler {
 
             // Seperate Postfix Commands for each expression
             int numExp = 0;
-            System.out.println("Assembley: \n" + "expression " + numExp + ": " );
+            System.out.println("Assembley:");
             while (line != null) {
                 // Trimming any leading spaces and splitting the line by spaces
                 String[] tokens = line.trim().split("\\s+");
                 // Creating a stack to hold our expressions
                 Stack<String> expStack = new Stack<String>();
-
+                System.out.println("expression " + numExp + ": " );
                 // Iterating through each token
                 for(int i = 0; i < tokens.length; i++){
                     // Getting i-th token
@@ -49,15 +49,14 @@ public class Assembler {
                     // and break out of the for loop to continue on to the next line
                     if(token.equals(";")){
                         // Print the expression to command line
-                        System.out.println("expression " + numExp + ": " );
                         // Add one to the expression count
                         numExp++;
-                        assembler.push(new Node<String>("\n\n\n",null));
+                        assembler.push(new Node<String>("\n\n",null));
                         break;
                     }
 
                     // If token is an operator...
-                    if(token == "+" || token == "-" || token == "*" || token == "/"){
+                    if(token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/")){
 
                         // Pop the right operand
                         String right = expStack.pop().getData();
@@ -107,6 +106,8 @@ public class Assembler {
                 
                 // Read a new line which may contain an expression
                 line = reader.readLine();
+                register = 1;
+                
             }
 
             // Close the buffer reader
@@ -188,9 +189,11 @@ public class Assembler {
 
             // Reading the input file
             expression.convertFile(inputName);
-            
-            // Rewritting usage statement
-            System.out.println("usage: Postfix input [outputPostfix]");
+
+            // Creating output file name
+            String outputFile = inputName.replace(".txt", "") + "_assembly.txt";
+
+            expression.writeFile(outputFile);
 
         }
 
@@ -201,9 +204,6 @@ public class Assembler {
             String inputName = args[0];
             // Getting the output file
             String outputName = args[1];
-
-            // Creating output file name
-            String outputFile = inputName.replace(".txt", "") + "_postfix.txt";
 
             // Reading the input file
             expression.convertFile(inputName);
