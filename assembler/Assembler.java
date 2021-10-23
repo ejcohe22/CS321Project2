@@ -25,26 +25,24 @@ public class Assembler {
 
     // These fields hold string formats for the assembly language
     // load format
-    private String load = "LD %s\n";
+    private String load = "   LD    %s\n";
     // Store format
-    private String store = "ST %s\n";
+    private String store = "   ST    %s\n";
     // Add format
-    private String add = "AD %s\n";
+    private String add = "   AD    %s\n";
     // Subtract format
-    private String subtract = "SB %s\n";
+    private String subtract = "   SB    %s\n";
     // Multiply format
-    private String multiply = "ML %s\n";
+    private String multiply = "   ML    %s\n";
     // Divide format
-    private String divide = "DV %s\n";
+    private String divide = "   DV    %s\n";
     // Temporary variable format
     private String temporary = "TMP%s";
 
     // This field holds our assembly string
     private String assembly = "";
 
-
     public Assembler(String fileName){
-        
         // Sets tempVars to 1
         this.tempVars = 1;
         // Initializes the finalExpressions stack
@@ -64,10 +62,28 @@ public class Assembler {
         this.postfixFileName = fileName.replace(".txt", "") + "_postfix.txt";
         // Writes the postfix file 
         postfixConvert.writeFile(this.postfixFileName);
+    }
 
+    public Assembler(String fileName, String output){
+        // Sets tempVars to 1
+        this.tempVars = 1;
+        // Initializes the finalExpressions stack
+        this.finalExpressions = new Stack<String>();
+        // Initializes the postfix object
 
-        
-        
+        Postfix postfixConvert = new Postfix();
+        // Reads the file with infix expressions
+        postfixConvert.convertFile(fileName);
+
+        // Initializing the infix stack
+        this.infixExpression = postfixConvert.getInfix();
+        // Initializing the postfix stack
+        this.postfixExpression = postfixConvert.getPostfix();
+
+        // postfix filename created
+        this.postfixFileName = output + "_postfix.txt";
+        // Writes the postfix file 
+        postfixConvert.writeFile(this.postfixFileName);
     }
 
     // Method Takes in two operands and an operator, then converts them to 
@@ -232,7 +248,7 @@ public class Assembler {
             while (! writingAssembly.isEmpty()){
                 write.append("Infix Expression: " + writingInfix.pop().getData() + "\n");
                 write.append("Postfix Expression: " + writingPostfix.pop().getData() + "\n");
-                write.append(writingAssembly.pop().getData() + "\n\n\n");
+                write.append(writingAssembly.pop().getData() + "\n\n");
             }
 
             // Close the FileWriter object
@@ -249,10 +265,51 @@ public class Assembler {
 
 
     public static void main(String[] args) {
+
+        // Default operation, input file is exp.txt
+        // Output file is conv.txt
+        if (args.length == 0){
+            // Printing use statement
+            System.out.println("usage: Postfix input [output]");
+        }
         
-        // Creating test object
-        Assembler test = new Assembler("exp.txt");
-        test.convertFile();
-        test.writeFile("exp_assembly.txt");
+        // Case in which we are given an input file name but not an output file name
+        else if (args.length == 1){
+            
+            // Getting the input file name
+            String inputName = args[0];
+
+            // Creating new Postfix object
+            Assembler expression = new Assembler(inputName);
+            try{Thread.sleep(3000);}catch(InterruptedException ex){Thread.currentThread().interrupt();}
+
+            // Reading conv.txt file
+            expression.convertFile();
+            // Writing postfix expressions from exp.txt to conv.txt
+            expression.writeFile(inputName.replace(".txt", "") + "_assembly.txt");
+        }
+
+        // Case in which we are given both the input and output file names
+        else if (args.length == 2){
+            // Getting the input file
+            String inputName = args[0];
+            // Getting the output file
+            String outputName = args[1];
+
+            Assembler expression = new Assembler(inputName,outputName);
+            try{Thread.sleep(3000);}catch(InterruptedException ex){Thread.currentThread().interrupt();}
+
+            // Reading conv.txt file
+            expression.convertFile();
+            // Writing postfix expressions from exp.txt to conv.txt
+            expression.writeFile(outputName.replace(".txt", "") + "_assembly.txt");
+        }
+
+        // If the incorrect number of arguments were passed through print an error message
+        // And print the usage statement
+        else{
+            System.out.println("Error: Too many arguments were passed!");
+            System.out.println("usage: Postfix input [output]");
+        }
     }
-}
+} 
