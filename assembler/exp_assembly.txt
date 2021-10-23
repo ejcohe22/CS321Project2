@@ -1,0 +1,25 @@
+Infix Expression: ( ( A + ( B * C ) ) / ( D - E ) ) ;
+Postfix Expression: A B C * + D E - / ;
+LD B
+ML C
+ST TMP1
+LD A
+AD TMP1
+ST TMP2
+LD D
+SB E
+ST TMP3
+LD TMP2
+DV TMP3
+ST TMP4
+
+
+
+Infix Expression: ( A + B ) ; 
+Postfix Expression: A B + ;
+LD A
+AD B
+ST TMP1
+
+
+
